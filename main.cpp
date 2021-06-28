@@ -62,6 +62,14 @@ int main()
                 std::cout << "Index out of range." << std::endl;
             }
         }
+
+        if (cmd == "process")
+        {
+            if(!progression.process())
+            {
+                std::cout << "Could not generate shortest path." << std::endl;
+            }
+        }
     }
 
     return 0;

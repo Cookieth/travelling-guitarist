@@ -29,7 +29,7 @@ Chord ChordInterpreter::interpret(std::string chord_string)
         }
     }
 
-    Chord translated_chord{true, chord, suffix, std::vector<finger_coordinates>(chord_positions.size(), std::vector<std::pair<int, int>>(5))};
+    Chord translated_chord{true, chord, suffix};
 
     // Get all the positions, and convert into x/y coordinate system
     for(std::size_t index = 0; index < chord_positions.size(); ++index)
@@ -85,6 +85,8 @@ Chord ChordInterpreter::interpret(std::string chord_string)
             translated_chord.positions[translated_chord.positions.size() - 1][finger_index] = std::make_pair(finger_frets[finger_index], finger_strings[finger_index]);
         }
     }
+
+    std::cout << "Total positions: " << translated_chord.positions.size() << std::endl;
 
     return translated_chord;
 }
