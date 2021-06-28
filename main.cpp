@@ -6,13 +6,13 @@
 #include "chordprogression.hpp"
 #include "chord.hpp"
 
-int main(){
-    std::ifstream input_file("chords.json");
-    nlohmann::json json = nlohmann::json::parse(input_file);
-    
+int main()
+{
     std::string line;
     bool status;
 
+    std::ifstream input_file("chords.json");
+    nlohmann::json json = nlohmann::json::parse(input_file);
     ChordProgression progression;
     ChordInterpreter interpreter(json);
 
@@ -37,9 +37,32 @@ int main(){
         if (cmd == "add")
         {
             Chord chord = interpreter.interpret(obj);
+
+            if(chord.is_valid == false)
+            {
+                std::cout << "Invalid input." << std::endl;
+            }
+
+            if(!progression.add(chord))
+            {
+                std::cout << "Could not add chord." << std::endl;
+            }
+        }
+
+        if (cmd == "list")
+        {
+            progression.list();
+        }
+
+        if (cmd == "erase")
+        {
+            
+            if(!progression.remove(std::atoi(obj.data())))
+            {
+                std::cout << "Index out of range." << std::endl;
+            }
         }
     }
-
 
     return 0;
 }

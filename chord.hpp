@@ -19,9 +19,10 @@ enum class Fingers
 
 struct Chord
 {
+    bool is_valid;
     std::string chord_key;
     std::string chord_suffix;
-    finger_coordinates points;
+    std::vector<finger_coordinates> positions;
 };
 
 class ChordInterpreter
@@ -33,6 +34,8 @@ public:
 
 private:
     bool verify_string(std::string chord_string);
+
+    nlohmann::json chords_json;
 };
 
 #endif
