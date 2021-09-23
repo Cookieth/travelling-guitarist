@@ -1,6 +1,7 @@
 #include <iostream>
 #include <math.h>
 #include <limits>
+#include <utility>
 
 #include "chordprogression.hpp"
 
@@ -72,12 +73,13 @@ bool ChordProgression::process()
     std::vector<bool> positions_visited(num_positions, false);
 
     total_distance[0] = 0;
-
+        
     for(std::size_t position_index = 0; position_index < num_positions - 1; ++position_index)
     {
         // Find the position with the shortest distance
         int min_index = 0;
-        int min_distance = std::numeric_limits<double>::max();
+        double min_distance = std::numeric_limits<double>::max();
+
         for (int index = 0; index < total_distance.size(); index++)
         {
             if(total_distance[index] <= min_distance && positions_visited[index] == false)
@@ -89,21 +91,24 @@ bool ChordProgression::process()
 
         // We choose to "visit" this minimum position
         positions_visited[min_index] = true;
-
         // Update all adjacent vertices
         for(std::size_t adjacent_index = 0; adjacent_index < num_positions; ++adjacent_index)
         {
             if(positions_visited[adjacent_index] == false && // Only update for unvisited nodes
                 adjacency_matrix[min_index][adjacent_index] != 0 && // Only update for valid nodes (path exists)
-                total_distance[min_index] != std::numeric_limits<double>::max() && // Only update if the source node is valid
-                total_distance[min_distance] + adjacency_matrix[min_index][adjacent_index] < total_distance[adjacent_index]) // Update the minimum
+                total_distance[min_index] + adjacency_matrix[min_index][adjacent_index] < total_distance[adjacent_index]) // Update the minimum
             {
                 parent_index[adjacent_index] = min_index;
-                total_distance[adjacent_index] = total_distance[min_distance] + adjacency_matrix[min_index][adjacent_index];
+                total_distance[adjacent_index] = total_distance[min_index] + adjacency_matrix[min_index][adjacent_index];
             }
         }
     }
 
+    std::cout << "Printing All Distances" << std::endl;
+    for(std::size_t i = 0; i < total_distance.size(); ++i)
+    {
+        std::cout << i << " : " << total_distance[i] << std::endl;
+    }
 
     // Interpret the shortest path
     
@@ -112,38 +117,59 @@ bool ChordProgression::process()
 
     std::size_t shortest_path_index = 0;
     double shortest_path_weight = std::numeric_limits<double>::max();
-
+    std::cout << "Num final positions " << num_final_positions << std::endl;
     // Get the shortest index
     for(std::size_t index = 0; index < num_final_positions; ++index)
     {
+        std::cout << "Index: " << num_positions - 1 - index << std::endl;
+        std::cout << "Weight: " << total_distance[num_positions - 1 - index] << std::endl;
         if(total_distance[num_positions - 1 - index] <= shortest_path_weight)
         {
             shortest_path_weight = total_distance[num_positions - 1 - index];
-            shortest_path_index = index;
+            shortest_path_index = num_positions - 1 - index;
         }
     }
+    std::cout << "Shortest path index " << shortest_path_index << std::endl;
 
     // Draw out the shortest path
-    std::vector<finger_coordinates*> shortest_path;
+    shortest_path.clear();
     std::size_t cursor_index = shortest_path_index;
-    while(parent_index[shortest_path_index] != -1)
+    while(cursor_index != -1)
     {
         shortest_path.emplace_back(adjacency_reference[cursor_index]);
         cursor_index = parent_index[cursor_index];
     }
 
+    std::cout << "Shortest path size " << shortest_path.size() << std::endl;
+
+    std::vector<std::string> out_string(6, "|-");
     // Print the shortest path (improve on this in helper function)
     for(std::size_t index = 0; index < shortest_path.size(); ++index)
     {
-        finger_coordinates* position = shortest_path[index];
+        std::pair<std::size_t, std::size_t> position = shortest_path[index];
+        finger_coordinates coords = chord_progression[position.first].positions[position.second];
 
         std::cout << index << ": ";
+
+        std::vector<std::string> new_string(6, "0");
+
         for(std::size_t finger_index = 1; finger_index < 5; ++finger_index)
         {
-            std::cout << "(" << position->at(finger_index).first << ", " << position->at(finger_index).second << ") --> ";
+            new_string[coords[finger_index].second] = std::to_string(coords[finger_index].first);
+            std::cout << "(" << coords[finger_index].first << ", " << coords[finger_index].second << ") --> ";
+        }
+        std::cout << std::endl;
+
+        for(int i = 0; i < 6; ++i)
+        {
+            out_string[i] += new_string[i] + "-";
         }
     }
-    std::cout << std::endl;
+
+    for (auto string : out_string)
+    {
+        std::cout << string << std::endl;
+    }
 
     return true;
 }
@@ -177,7 +203,7 @@ bool ChordProgression::generate_adjacency_matrix()
             {
                 double distance = get_total_distance(source_chord.positions[source_position_index], dest_chord.positions[dest_position_index]);
                 adjacency_matrix[source_node_index][dest_base_index + dest_position_index] = distance;
-                adjacency_reference[source_node_index] = &(source_chord.positions[source_position_index]);
+                adjacency_reference[source_node_index] = std::make_pair(chord_index, source_position_index);
             }
             ++source_node_index;
         }

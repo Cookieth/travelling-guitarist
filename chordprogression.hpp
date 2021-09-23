@@ -2,6 +2,7 @@
 #define CHORDPROGRESSION_H
 
 #include <vector>
+#include <utility>
 
 #include "chord.hpp"
 
@@ -23,7 +24,8 @@ private:
     std::vector<Chord> chord_progression;
     std::size_t num_positions;
     std::vector<std::vector<double>> adjacency_matrix;
-    std::unordered_map<int, finger_coordinates*> adjacency_reference;
+    std::unordered_map<int, std::pair<std::size_t, std::size_t>> adjacency_reference;
+    std::vector<std::pair<std::size_t, std::size_t>> shortest_path;
 };
 
 #endif
